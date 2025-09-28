@@ -124,13 +124,13 @@ This project is licensed under the MIT License.
 ## Demo & Screenshots
 
 ### Home Page
-![Home Page](docs/screenshots/homepage.png)
+![Home Page](docs/image.png)
 
 ### Screening Page
-![Screening Page](docs/screenshots/screening.png)
+![Screening Page](docs/image2.png)
 
 ### Resources Page
-![Resources Page](docs/screenshots/resources.png)
+![Resources Page](docs/image3.png)
 
 > To update these images, replace the files in `docs/screenshots/` or use your own paths. You can use PNG, JPG, or GIF formats.
 
