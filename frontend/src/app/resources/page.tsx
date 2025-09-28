@@ -15,7 +15,6 @@ import {
   Search,
   Filter
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CRISIS_RESOURCES } from "@/lib/constants";
@@ -159,107 +158,104 @@ export default function ResourcesPage() {
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'crisis': return 'text-red-600 bg-red-100 dark:bg-red-950';
-      case 'anxiety': return 'text-orange-600 bg-orange-100 dark:bg-orange-950';
-      case 'depression': return 'text-blue-600 bg-blue-100 dark:bg-blue-950';
-      case 'self-care': return 'text-green-600 bg-green-100 dark:bg-green-950';
-      case 'coping': return 'text-purple-600 bg-purple-100 dark:bg-purple-950';
-      case 'relationships': return 'text-pink-600 bg-pink-100 dark:bg-pink-950';
-      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-800';
+      case 'crisis': return 'text-red-700 bg-red-100 dark:text-red-200 dark:bg-red-900/50';
+      case 'anxiety': return 'text-orange-700 bg-orange-100 dark:text-orange-200 dark:bg-orange-900/50';
+      case 'depression': return 'text-blue-700 bg-blue-100 dark:text-blue-200 dark:bg-blue-900/50';
+      case 'self-care': return 'text-green-700 bg-green-100 dark:text-green-200 dark:bg-green-900/50';
+      case 'coping': return 'text-purple-700 bg-purple-100 dark:text-purple-200 dark:bg-purple-900/50';
+      case 'relationships': return 'text-pink-700 bg-pink-100 dark:text-pink-200 dark:bg-pink-900/50';
+      default: return 'text-gray-700 bg-gray-100 dark:text-gray-200 dark:bg-gray-800';
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-semibold">Mental Health Resources</h1>
-        <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Curated collection of evidence-based resources, crisis support, and tools 
-          to support your mental health journey.
+    <div className="w-full bg-white text-black overflow-x-hidden">
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-8 sm:py-12 lg:py-20 space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold text-black">Mental Health Resources</h1>
+          <p className="text-black max-w-2xl mx-auto">
+            Curated collection of evidence-based resources, crisis support, and tools 
+            to support your mental health journey.
+          </p>
+        </div>
+
+      {/* Crisis Support Banner */}
+      <div className="border border-black/20 bg-white p-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Phone className="h-6 w-6 text-black" />
+          <h2 className="text-lg font-semibold text-black">
+            Immediate Crisis Support
+          </h2>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Button
+            onClick={() => window.location.href = `tel:${CRISIS_RESOURCES.us.national}`}
+            className="bg-white text-black border border-black hover:bg-black hover:text-white text-white"
+            size="lg"
+          >
+            <Phone className="h-4 w-4 mr-2" />
+            Call 988 - Crisis Lifeline
+          </Button>
+          <Button
+            onClick={() => window.location.href = "sms:741741?body=HOME"}
+            variant="outline"
+            className="border border-black/20 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+            size="lg"
+          >
+            Text HOME to 741741
+          </Button>
+        </div>
+        <p className="text-sm text-black mt-3">
+          If you're experiencing thoughts of self-harm or are in immediate danger, 
+          please call emergency services (911) or go to your nearest emergency room.
         </p>
       </div>
 
-      {/* Crisis Support Banner */}
-      <Card className="border-red-500 bg-red-50 dark:bg-red-950">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Phone className="h-6 w-6 text-red-600" />
-            <h2 className="text-lg font-semibold text-red-800 dark:text-red-200">
-              Immediate Crisis Support
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Button
-              onClick={() => window.location.href = `tel:${CRISIS_RESOURCES.us.national}`}
-              className="bg-red-600 hover:bg-red-700 text-white"
-              size="lg"
-            >
-              <Phone className="h-4 w-4 mr-2" />
-              Call 988 - Crisis Lifeline
-            </Button>
-            <Button
-              onClick={() => window.location.href = "sms:741741?body=HOME"}
-              variant="outline"
-              className="border-red-500 text-red-700 hover:bg-red-50"
-              size="lg"
-            >
-              Text HOME to 741741
-            </Button>
-          </div>
-          <p className="text-sm text-red-700 dark:text-red-300 mt-3">
-            If you're experiencing thoughts of self-harm or are in immediate danger, 
-            please call emergency services (911) or go to your nearest emergency room.
-          </p>
-        </CardContent>
-      </Card>
-
       {/* Search and Filters */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search resources..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="md:w-48">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-black/20 rounded-md bg-white dark:bg-black dark:border-white/20"
-              >
-                <option value="">All Categories</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="md:w-32">
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-black/20 rounded-md bg-white dark:bg-black dark:border-white/20"
-              >
-                <option value="">All Types</option>
-                {types.map(type => (
-                  <option key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </option>
-                ))}
-              </select>
+      <div className="bg-white p-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black" />
+              <Input
+                placeholder="Search resources..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-white text-black border-black/20"
+              />
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="md:w-48">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md bg-white text-black border-black/20"
+            >
+              <option value="">All Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="md:w-32">
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md bg-white text-black border-black/20"
+            >
+              <option value="">All Types</option>
+              {types.map(type => (
+                <option key={type} value={type}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
 
       {/* Results Count */}
       <div className="flex items-center justify-between">
@@ -275,6 +271,7 @@ export default function ResourcesPage() {
             }}
             variant="outline"
             size="sm"
+            className="border-black/20 text-black"
           >
             Clear Filters
           </Button>
@@ -284,107 +281,132 @@ export default function ResourcesPage() {
       {/* Resources Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredResources.map((resource) => (
-          <Card key={resource.id} className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => handleResourceClick(resource)}>
-            <CardHeader>
+          <div 
+            key={resource.id} 
+            className="hover:shadow-lg transition-shadow cursor-pointer bg-white border border-black/20 p-6"
+            onClick={() => handleResourceClick(resource)}
+          >
+            <div className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  {getResourceIcon(resource.type)}
-                  <div>
-                    <CardTitle className="text-base">{resource.title}</CardTitle>
-                    <div className="flex items-center gap-2 mt-1">
+                  <div className="text-black">
+                    {getResourceIcon(resource.type)}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-base text-black font-semibold">
+                      {resource.title}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
                       <span className={`px-2 py-1 text-xs rounded-full ${getCategoryColor(resource.category)}`}>
                         {resource.category}
                       </span>
                       {resource.free && (
-                        <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-950">
+                        <span className="px-2 py-1 text-xs rounded-full bg-white border border-black/20 text-black">
                           Free
                         </span>
                       )}
                     </div>
                   </div>
                 </div>
-                <ExternalLink className="h-4 w-4 text-gray-400" />
+                <ExternalLink className="h-4 w-4 text-black" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            </div>
+            <div className="pt-0">
+              <p className="text-sm text-black mb-3">
                 {resource.description}
               </p>
               
               {resource.duration && (
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-black mb-3">
                   <span>{resource.duration}</span>
                 </div>
               )}
 
               {resource.phone && (
-                <div className="mt-3">
-                  <Button size="sm" className="w-full">
+                <div className="mt-2">
+                  <Button 
+                    size="sm" 
+                    className="w-full bg-white text-black border border-black hover:bg-black hover:text-white"
+                  >
                     <Phone className="h-4 w-4 mr-2" />
                     Call {resource.phone}
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
       {filteredResources.length === 0 && (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-lg font-medium mb-2">No resources found</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Try adjusting your search criteria or browse all available resources.
-            </p>
-            <Button
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedCategory("");
-                setSelectedType("");
-              }}
-            >
-              Show All Resources
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="bg-white border border-black/20 p-8 text-center">
+          <div className="text-6xl mb-4 text-black">🔍</div>
+          <h3 className="text-lg font-medium text-black mb-2">No resources found</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Try adjusting your search criteria or browse all available resources.
+          </p>
+          <Button
+            onClick={() => {
+              setSearchTerm("");
+              setSelectedCategory("");
+              setSelectedType("");
+            }}
+            variant="outline"
+            className="border-black/20 text-black"
+          >
+            Clear Filters
+          </Button>
+        </div>
       )}
 
       {/* Additional Information */}
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-3">
-              <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
-              <div className="text-sm text-blue-800 dark:text-blue-200">
-                <p className="font-medium mb-1">Quality Assurance</p>
-                <p>
-                  All resources are curated and reviewed by mental health professionals. 
-                  However, they should not replace professional medical advice or treatment.
-                </p>
-              </div>
+        <div className="border border-black/20 bg-white p-6">
+          <div className="flex items-start gap-3">
+            <Shield className="h-5 w-5 text-black mt-0.5" />
+            <div className="text-sm text-black">
+              <p className="font-medium mb-1">Quality Assurance</p>
+              <p>
+                All resources are curated and reviewed by mental health professionals. 
+                However, they should not replace professional medical advice or treatment.
+              </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-3">
-              <Heart className="h-5 w-5 text-green-600 mt-0.5" />
-              <div className="text-sm text-green-800 dark:text-green-200">
-                <p className="font-medium mb-1">Community Support</p>
-                <p>
-                  Many resources include community forums and support groups. 
-                  Connecting with others who share similar experiences can be incredibly helpful.
-                </p>
-              </div>
+        <div className="border border-black/20 bg-white p-6">
+          <div className="flex items-start gap-3">
+            <Heart className="h-5 w-5 text-black mt-0.5" />
+            <div className="text-sm text-black">
+              <p className="font-medium mb-1">Community Support</p>
+              <p>
+                Many resources include community forums and support groups. 
+                Connecting with others who share similar experiences can be incredibly helpful.
+              </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-white/80 backdrop-blur border-t border-gray-200 py-12 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-2">
+              <div className="h-6 w-6 bg-gradient-to-r from-[#A7C7E7] to-[#89B5E3] rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-bold">♥</span>
+              </div>
+              <span className="font-semibold text-black">MindSupport</span>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-gray-600">
+                © {new Date().getFullYear()} MindSupport. Professional counselor connections for your mental health journey.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
     </div>
   );
 }
-

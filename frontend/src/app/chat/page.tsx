@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Send, Mic, MicOff, RefreshCw, Phone, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { CrisisAlert } from "@/components/CrisisAlert";
 import { useChatStore } from "@/stores/chatStore";
 import { formatTime } from "@/lib/utils";
@@ -49,11 +48,18 @@ export default function ChatPage() {
 
     try {
       // Real API call to backend
-      const response = await fetch('http://localhost:8000/api/chat/message', {
+  const { getCurrentUserId } = await import('@/lib/utils');
+  const { API_ENDPOINTS } = await import('@/lib/constants');
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const chatEndpoint = `${apiBase}${API_ENDPOINTS.chat}/message`;
+      const uid = getCurrentUserId();
+
+  const response = await fetch(chatEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Session-ID': sessionId,
+          'X-User-ID': uid || '',
         },
         body: JSON.stringify({
           message: userMessage
@@ -106,27 +112,25 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-140px)] flex flex-col">
+    <div className={`w-full bg-white text-black overflow-x-hidden min-h-screen flex flex-col pt-8 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pb-8`}>
       {showCrisisAlert && (
         <CrisisAlert onClose={() => setShowCrisisAlert(false)} />
       )}
       
       {/* Safety Notice */}
-      <Card className="mb-4 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div className="text-sm text-blue-800 dark:text-blue-200">
-              <p className="font-medium mb-1">Anonymous Support Chat</p>
-              <p>
-                I'm here to provide supportive conversation and evidence-based coping tips. 
-                This service is not a substitute for professional medical care. 
-                If you're in crisis, please reach out to emergency services or call 988.
-              </p>
-            </div>
+      <div className="mb-4 p-6">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-red-900 mt-1" />
+          <div className="text-sm pt-0.5">
+            <p className="font-medium mb-2">Anonymous Support Chat</p>
+            <p className="leading-relaxed">
+              I'm here to provide supportive conversation and evidence-based coping tips. 
+              This service is not a substitute for professional medical care. 
+              If you're in crisis, please reach out to emergency services or call 988.
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Chat Header */}
       <div className="flex items-center justify-between mb-4">
@@ -149,7 +153,7 @@ export default function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto mb-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-center text-gray-500 mt-8">
+          <div className="text-center text-white mt-8">
             <p>Hello! I'm here to listen and support you.</p>
             <p>How are you feeling today?</p>
           </div>
@@ -181,6 +185,9 @@ export default function ChatPage() {
           <div className="flex justify-start">
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
               <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
                 <div className="flex gap-1">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
@@ -197,27 +204,25 @@ export default function ChatPage() {
 
       {/* Crisis Banner */}
       {crisisDetected && !showCrisisAlert && (
-        <Card className="mb-4 border-red-500 bg-red-50 dark:bg-red-950">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
-                <Phone className="h-4 w-4" />
-                <span className="text-sm font-medium">Crisis support available 24/7</span>
-              </div>
-              <Button
-                onClick={() => setShowCrisisAlert(true)}
-                size="sm"
-                className="bg-red-500 hover:bg-red-600 text-white"
-              >
-                Get Help Now
-              </Button>
+        <div className="mb-4 border-red-500 bg-red-50 dark:bg-red-950 p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
+              <Phone className="h-4 w-4" />
+              <span className="text-sm font-medium">Crisis support available 24/7</span>
             </div>
-          </CardContent>
-        </Card>
+            <Button
+              onClick={() => setShowCrisisAlert(true)}
+              size="sm"
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Get Help Now
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-2 mb-8">
         <div className="flex-1">
           <Input
             value={input}
@@ -242,6 +247,25 @@ export default function ChatPage() {
           <Send className="h-4 w-4" />
         </Button>
       </form>
+
+      {/* Footer */}
+      <footer className="bg-white/80 backdrop-blur border-t border-gray-200 py-12 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-2">
+              <div className="h-6 w-6 bg-gradient-to-r from-[#A7C7E7] to-[#89B5E3] rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-bold">♥</span>
+              </div>
+              <span className="font-semibold text-black">MindSupport</span>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-gray-600">
+                © {new Date().getFullYear()} MindSupport. Professional counselor connections for your mental health journey.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

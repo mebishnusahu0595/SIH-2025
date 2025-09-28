@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useScreeningStore } from "@/stores/screeningStore";
 import { PHQ9_QUESTIONS, GAD7_QUESTIONS, RESPONSE_OPTIONS } from "@/lib/constants";
@@ -111,31 +110,31 @@ export default function ScreeningPage() {
     const content = getRecommendationContent();
 
     return (
-      <Card className={`${content.color} border-2`}>
-        <CardHeader>
+      <div className={`${content.color} border-2 p-6`}>
+        <div className="pb-3">
           <div className="flex items-center gap-3">
             {content.icon}
             <div>
-              <CardTitle>{content.title}</CardTitle>
-              <CardDescription className="mt-1">
+              <div className="text-black font-semibold">{content.title}</div>
+              <div className="mt-1 text-black">
                 Score: {result.score} - {result.interpretation}
-              </CardDescription>
+              </div>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">{content.description}</p>
+        </div>
+        <div className="pt-0">
+          <p className="mb-4 text-black leading-relaxed">{content.description}</p>
           {content.actions}
-          <div className="mt-4 pt-4 border-t text-sm text-gray-600 dark:text-gray-400">
-            <p className="font-medium mb-1">Important Disclaimer:</p>
-            <p>
+          <div className="mt-4 pt-4 border-t text-sm text-black">
+            <p className="font-medium mb-1 text-black">Important Disclaimer:</p>
+            <p className="leading-relaxed">
               This screening tool is not a diagnostic instrument. Results should not replace 
               professional medical advice, diagnosis, or treatment. If you're experiencing 
               thoughts of self-harm, please seek immediate professional help.
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   };
 
@@ -177,9 +176,9 @@ export default function ScreeningPage() {
           </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Over the last 2 weeks, how often have you been bothered by the following problems?</CardTitle>
+        <div className="border border-black/20 bg-white p-6">
+          <div className="pb-3">
+            <div className="text-black font-semibold">Over the last 2 weeks, how often have you been bothered by the following problems?</div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className="bg-blue-500 h-2 rounded-full transition-all duration-300"
@@ -189,8 +188,8 @@ export default function ScreeningPage() {
             <p className="text-sm text-gray-600">
               {completedAnswers} of {questions.length} questions completed
             </p>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="pt-0">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {questions.map((question, index) => (
                 <div key={index} className="space-y-3">
@@ -218,57 +217,56 @@ export default function ScreeningPage() {
                 Complete Assessment
               </Button>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-semibold">Mental Health Screening</h1>
-        <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Take a brief, confidential screening to better understand your mental health. 
-          These tools can help identify symptoms and guide you toward appropriate resources.
-        </p>
-      </div>
+    <div className="w-full bg-white text-black overflow-x-hidden">
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-8 sm:py-12 lg:py-20 space-y-6">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-semibold">Mental Health Screening</h1>
+          <p className="text-black max-w-2xl mx-auto">
+            Take a brief, confidential screening to better understand your mental health. 
+            These tools can help identify symptoms and guide you toward appropriate resources.
+          </p>
+        </div>
 
       {/* Disclaimer */}
-      <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
-            <div className="text-sm text-amber-800 dark:text-amber-200">
-              <p className="font-medium mb-1">Important Notice</p>
-              <p>
-                These screening tools are for informational purposes only and are not diagnostic instruments. 
-                They cannot replace professional medical advice, diagnosis, or treatment. 
-                Results should be discussed with a qualified healthcare provider.
-              </p>
-            </div>
+      <div className="border-amber-500 bg-amber-50 dark:bg-amber-950 p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+          <div className="text-sm text-amber-800 dark:text-amber-200">
+            <p className="font-medium mb-1">Important Notice</p>
+            <p>
+              These screening tools are for informational purposes only and are not diagnostic instruments. 
+              They cannot replace professional medical advice, diagnosis, or treatment. 
+              Results should be discussed with a qualified healthcare provider.
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Assessment Options */}
       <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Depression Screening (PHQ-9)</CardTitle>
-            <CardDescription>
+        <div className="border border-black/20 bg-white p-6">
+          <div className="pb-3">
+            <div className="text-black font-semibold">Depression Screening (PHQ-9)</div>
+            <div className="mt-1 text-black">
               A 9-question tool to screen for depression symptoms over the past 2 weeks.
               Takes about 2-3 minutes to complete.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </div>
+          </div>
+          <div className="pt-0 space-y-4">
             {latestPHQ9 && (
               <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded">
                 <p className="text-sm font-medium">Last screening:</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-black">
                   Score: {latestPHQ9.score} - {latestPHQ9.interpretation}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-black">
                   {new Date(latestPHQ9.date).toLocaleDateString()}
                 </p>
               </div>
@@ -279,25 +277,25 @@ export default function ScreeningPage() {
             >
               Start Depression Screening
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Anxiety Screening (GAD-7)</CardTitle>
-            <CardDescription>
+        <div className="border border-black/20 bg-white p-6">
+          <div className="pb-3">
+            <div className="text-black font-semibold">Anxiety Screening (GAD-7)</div>
+            <div className="mt-1 text-black">
               A 7-question tool to screen for anxiety symptoms over the past 2 weeks.
               Takes about 2 minutes to complete.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </div>
+          </div>
+          <div className="pt-0 space-y-4">
             {latestGAD7 && (
               <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded">
                 <p className="text-sm font-medium">Last screening:</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-black">
                   Score: {latestGAD7.score} - {latestGAD7.interpretation}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-black">
                   {new Date(latestGAD7.date).toLocaleDateString()}
                 </p>
               </div>
@@ -308,16 +306,16 @@ export default function ScreeningPage() {
             >
               Start Anxiety Screening
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Additional Resources */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Need immediate help?</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <div className="border border-black/20 bg-white p-6">
+        <div className="pb-3">
+          <div className="text-black font-semibold">Need immediate help?</div>
+        </div>
+        <div className="pt-0 space-y-3">
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => window.location.href = "tel:988"}
@@ -337,8 +335,28 @@ export default function ScreeningPage() {
               </Button>
             </Link>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-white/80 backdrop-blur border-t border-gray-200 py-12 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-2">
+              <div className="h-6 w-6 bg-gradient-to-r from-[#A7C7E7] to-[#89B5E3] rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-bold">♥</span>
+              </div>
+              <span className="font-semibold text-black">MindSupport</span>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-gray-600">
+                © {new Date().getFullYear()} MindSupport. Professional counselor connections for your mental health journey.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
     </div>
   );
 }
