@@ -121,6 +121,18 @@ This project is licensed under the MIT License.
 
 ## Demo & Screenshots
 > Add screenshots and demo links here as needed
+## Demo & Screenshots
+
+### Home Page
+![Home Page](docs/screenshots/homepage.png)
+
+### Screening Page
+![Screening Page](docs/screenshots/screening.png)
+
+### Resources Page
+![Resources Page](docs/screenshots/resources.png)
+
+> To update these images, replace the files in `docs/screenshots/` or use your own paths. You can use PNG, JPG, or GIF formats.
 
 ---
 
