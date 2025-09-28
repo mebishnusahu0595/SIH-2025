@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { JournalEntry } from "@/types";
 import { STORAGE_KEYS } from "@/lib/constants";
+import { getNamespacedStorage } from "@/lib/utils";
 
 interface JournalStore {
   entries: JournalEntry[];
@@ -30,6 +31,34 @@ export const useJournalStore = create<JournalStore>()(
         set((state) => ({
           entries: [entry, ...state.entries],
         }));
+
+        // Mirror to backend (best-effort)
+        (async () => {
+          try {
+            const { getCurrentUserId } = await import('@/lib/utils');
+            const uid = getCurrentUserId();
+            const chatStore = (await import('@/stores/chatStore')).useChatStore.getState?.();
+            const sessionId = chatStore?.sessionId;
+
+            const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const { API_ENDPOINTS } = await import('@/lib/constants');
+            await fetch(`${apiBase}${API_ENDPOINTS.journal}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Session-ID': sessionId || '',
+                'X-User-ID': uid || '',
+              },
+              body: JSON.stringify({
+                content: entry.content,
+                mood: entry.mood,
+                tags: entry.tags || [],
+              }),
+            });
+          } catch (e) {
+            // ignore network errors
+          }
+        })();
       },
 
       updateEntry: (id: string, updates: Partial<JournalEntry>) => {
@@ -38,12 +67,58 @@ export const useJournalStore = create<JournalStore>()(
             entry.id === id ? { ...entry, ...updates } : entry
           ),
         }));
+
+        // Mirror update to backend (best-effort)
+        (async () => {
+          try {
+            const { getCurrentUserId } = await import('@/lib/utils');
+            const uid = getCurrentUserId();
+            const chatStore = (await import('@/stores/chatStore')).useChatStore.getState?.();
+            const sessionId = chatStore?.sessionId;
+
+            const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const { API_ENDPOINTS } = await import('@/lib/constants');
+            await fetch(`${apiBase}${API_ENDPOINTS.journal}/${id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Session-ID': sessionId || '',
+                'X-User-ID': uid || '',
+              },
+              body: JSON.stringify(updates),
+            });
+          } catch (e) {
+            // ignore
+          }
+        })();
       },
 
       deleteEntry: (id: string) => {
         set((state) => ({
           entries: state.entries.filter((entry) => entry.id !== id),
         }));
+
+        // Mirror delete to backend (best-effort)
+        (async () => {
+          try {
+            const { getCurrentUserId } = await import('@/lib/utils');
+            const uid = getCurrentUserId();
+            const chatStore = (await import('@/stores/chatStore')).useChatStore.getState?.();
+            const sessionId = chatStore?.sessionId;
+
+            const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const { API_ENDPOINTS } = await import('@/lib/constants');
+            await fetch(`${apiBase}${API_ENDPOINTS.journal}/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'X-Session-ID': sessionId || '',
+                'X-User-ID': uid || '',
+              },
+            });
+          } catch (e) {
+            // ignore
+          }
+        })();
       },
 
       getEntriesByDateRange: (startDate: Date, endDate: Date) => {
@@ -83,6 +158,7 @@ export const useJournalStore = create<JournalStore>()(
     }),
     {
       name: STORAGE_KEYS.journalEntries,
+      storage: getNamespacedStorage(STORAGE_KEYS.journalEntries) as any,
     }
   )
 );

@@ -30,6 +30,7 @@ class Session(BaseModel):
 class ChatMessage(BaseModel):
     id: str
     session_id: Optional[str] = None
+    user_id: Optional[str] = None
     role: Literal["user", "assistant", "system"]
     content: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
@@ -61,6 +62,7 @@ class GAD7Response(ScreeningResponse):
 class ScreeningResult(BaseModel):
     id: str
     session_id: Optional[str] = None
+    user_id: Optional[str] = None
     screening_type: Literal["phq9", "gad7"]
     total_score: int
     severity: str
@@ -79,6 +81,7 @@ class JournalCreate(BaseModel):
 class JournalEntry(BaseModel):
     id: str
     session_id: Optional[str] = None
+    user_id: Optional[str] = None
     mood_score: int
     content: str
     tags: List[str] = Field(default_factory=list)
@@ -109,21 +112,18 @@ class CounselorCreate(BaseModel):
 class Counselor(BaseModel):
     id: str
     name: str
-    email: EmailStr
-    phone: Optional[str] = None
     specialties: List[str]
-    bio: Optional[str] = None
-    location: Optional[str] = None
-    experience_years: Optional[int] = None
-    education: List[str] = Field(default_factory=list)
-    certifications: List[str] = Field(default_factory=list)
-    languages: List[str] = Field(default_factory=list)
-    session_types: List[str] = Field(default_factory=list)
-    rate_per_session: Optional[float] = None
+    credentials: str
+    bio: str
+    availability: str
+    contactInfo: Dict[str, Any]
+    isVerified: bool
+    rating: float = 4.5
+    reviewCount: int = 0
+    hourlyRate: float = 0
+    languages: List[str] = Field(default_factory=lambda: ["English"])
+    location: str = "Online"
     is_available: bool = True
-    is_verified: bool = False
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 # Resource Models
 class ResourceCreate(BaseModel):

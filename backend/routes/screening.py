@@ -16,6 +16,7 @@ router = APIRouter(prefix="/screening", tags=["screening"])
 async def submit_phq9_screening(
     screening_data: ScreeningCreate,
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     db = Depends(get_database)
 ):
     """Submit PHQ-9 depression screening"""
@@ -107,6 +108,7 @@ async def submit_phq9_screening(
     screening_result = ScreeningResult(
         id=str(uuid.uuid4()),
         session_id=session_id,
+        user_id=user_id,
         screening_type="phq9",
         total_score=total_score,
         severity=severity,
@@ -120,7 +122,7 @@ async def submit_phq9_screening(
     # Store in database
     try:
         await db.screenings.insert_one(screening_result.dict())
-        
+
         # Update session with screening info if session exists
         if session_id:
             await db.sessions.update_one(
@@ -137,7 +139,7 @@ async def submit_phq9_screening(
                     "$set": {"updated_at": datetime.utcnow()}
                 }
             )
-    
+
     except Exception as e:
         print(f"Database error storing PHQ-9 screening: {e}")
         # Continue execution - don't fail if database storage fails
@@ -148,6 +150,7 @@ async def submit_phq9_screening(
 async def submit_gad7_screening(
     screening_data: ScreeningCreate,
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     db = Depends(get_database)
 ):
     """Submit GAD-7 anxiety screening"""
@@ -227,6 +230,7 @@ async def submit_gad7_screening(
     screening_result = ScreeningResult(
         id=str(uuid.uuid4()),
         session_id=session_id,
+        user_id=user_id,
         screening_type="gad7",
         total_score=total_score,
         severity=severity,
@@ -240,7 +244,7 @@ async def submit_gad7_screening(
     # Store in database
     try:
         await db.screenings.insert_one(screening_result.dict())
-        
+
         # Update session with screening info if session exists
         if session_id:
             await db.sessions.update_one(
@@ -257,7 +261,7 @@ async def submit_gad7_screening(
                     "$set": {"updated_at": datetime.utcnow()}
                 }
             )
-    
+
     except Exception as e:
         print(f"Database error storing GAD-7 screening: {e}")
         # Continue execution - don't fail if database storage fails
@@ -267,30 +271,36 @@ async def submit_gad7_screening(
 @router.get("/history", response_model=List[ScreeningResult])
 async def get_screening_history(
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     limit: int = 10,
     db = Depends(get_database)
 ):
-    """Get screening history for a session"""
-    
-    if not session_id:
+    """Get screening history for a session or for a user (if X-User-ID provided)"""
+
+    # Prefer user_id when provided so logged-in users can retrieve their history across devices
+    if not user_id and not session_id:
         raise HTTPException(
             status_code=400,
-            detail="Session ID required to retrieve screening history"
+            detail="Session ID or User ID required to retrieve screening history"
         )
-    
+
     try:
-        # Get screenings for this session
-        cursor = db.screenings.find(
-            {"session_id": session_id}
-        ).sort("created_at", -1).limit(limit)
-        
+        # Build query based on available identifier
+        query = {}
+        if user_id:
+            query["user_id"] = user_id
+        else:
+            query["session_id"] = session_id
+
+        cursor = db.screenings.find(query).sort("created_at", -1).limit(limit)
+
         screenings = []
         async for screening_doc in cursor:
             screening_doc.pop("_id", None)  # Remove MongoDB _id
             screenings.append(ScreeningResult(**screening_doc))
-        
+
         return screenings
-    
+
     except Exception as e:
         print(f"Database error retrieving screening history: {e}")
         raise HTTPException(
@@ -301,20 +311,26 @@ async def get_screening_history(
 @router.get("/latest", response_model=Optional[ScreeningResult])
 async def get_latest_screening(
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     screening_type: Optional[str] = None,
     db = Depends(get_database)
 ):
-    """Get the latest screening result for a session"""
-    
-    if not session_id:
+    """Get the latest screening result for a session or for a user (if X-User-ID provided)"""
+
+    if not user_id and not session_id:
         raise HTTPException(
             status_code=400,
-            detail="Session ID required to retrieve latest screening"
+            detail="Session ID or User ID required to retrieve latest screening"
         )
-    
+
     try:
         # Build query
-        query = {"session_id": session_id}
+        query = {}
+        if user_id:
+            query["user_id"] = user_id
+        else:
+            query["session_id"] = session_id
+
         if screening_type:
             if screening_type not in ["phq9", "gad7"]:
                 raise HTTPException(
@@ -322,19 +338,19 @@ async def get_latest_screening(
                     detail="Invalid screening type. Must be 'phq9' or 'gad7'"
                 )
             query["screening_type"] = screening_type
-        
+
         # Get latest screening
         screening_doc = await db.screenings.find_one(
             query,
             sort=[("created_at", -1)]
         )
-        
+
         if not screening_doc:
             return None
-        
+
         screening_doc.pop("_id", None)  # Remove MongoDB _id
         return ScreeningResult(**screening_doc)
-    
+
     except Exception as e:
         print(f"Database error retrieving latest screening: {e}")
         raise HTTPException(

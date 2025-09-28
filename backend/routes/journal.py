@@ -13,6 +13,7 @@ router = APIRouter(prefix="/journal", tags=["journal"])
 async def create_journal_entry(
     entry_data: JournalCreate,
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     db = Depends(get_database)
 ):
     """Create a new journal entry"""
@@ -41,6 +42,7 @@ async def create_journal_entry(
     journal_entry = JournalEntry(
         id=str(uuid.uuid4()),
         session_id=session_id,
+        user_id=user_id,
         mood_score=entry_data.mood_score,
         content=entry_data.content,
         tags=entry_data.tags or [],
@@ -50,7 +52,7 @@ async def create_journal_entry(
     try:
         # Store in database
         await db.journal_entries.insert_one(journal_entry.dict())
-        
+
         # Update session with journal activity if session exists
         if session_id:
             await db.sessions.update_one(
@@ -63,9 +65,9 @@ async def create_journal_entry(
                     }
                 }
             )
-        
+
         return journal_entry
-    
+
     except Exception as e:
         print(f"Database error creating journal entry: {e}")
         raise HTTPException(
@@ -76,24 +78,29 @@ async def create_journal_entry(
 @router.get("", response_model=List[JournalEntry])
 async def get_journal_entries(
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     limit: int = 20,
     skip: int = 0,
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     db = Depends(get_database)
 ):
-    """Get journal entries for a session"""
-    
-    if not session_id:
+    """Get journal entries for a session or for a user (if X-User-ID provided)"""
+
+    if not user_id and not session_id:
         raise HTTPException(
             status_code=400,
-            detail="Session ID required to retrieve journal entries"
+            detail="Session ID or User ID required to retrieve journal entries"
         )
-    
+
     try:
         # Build query
-        query = {"session_id": session_id}
-        
+        query = {}
+        if user_id:
+            query["user_id"] = user_id
+        else:
+            query["session_id"] = session_id
+
         # Add date filters if provided
         if start_date or end_date:
             date_filter = {}
@@ -102,17 +109,17 @@ async def get_journal_entries(
             if end_date:
                 date_filter["$lte"] = datetime.combine(end_date, datetime.max.time())
             query["created_at"] = date_filter
-        
+
         # Get entries
         cursor = db.journal_entries.find(query).sort("created_at", -1).skip(skip).limit(limit)
-        
+
         entries = []
         async for entry_doc in cursor:
             entry_doc.pop("_id", None)  # Remove MongoDB _id
             entries.append(JournalEntry(**entry_doc))
-        
+
         return entries
-    
+
     except Exception as e:
         print(f"Database error retrieving journal entries: {e}")
         raise HTTPException(
@@ -123,15 +130,16 @@ async def get_journal_entries(
 @router.get("/stats", response_model=MoodStats)
 async def get_mood_statistics(
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     days: int = 30,
     db = Depends(get_database)
 ):
     """Get mood statistics for a session"""
     
-    if not session_id:
+    if not user_id and not session_id:
         raise HTTPException(
             status_code=400,
-            detail="Session ID required to retrieve mood statistics"
+            detail="Session ID or User ID required to retrieve mood statistics"
         )
     
     try:
@@ -140,13 +148,17 @@ async def get_mood_statistics(
         start_date = end_date - timedelta(days=days)
         
         # Aggregate mood data
+        # Build match stage to use user_id when present
+        match_stage = {
+            "created_at": {"$gte": start_date, "$lte": end_date}
+        }
+        if user_id:
+            match_stage["user_id"] = user_id
+        else:
+            match_stage["session_id"] = session_id
+
         pipeline = [
-            {
-                "$match": {
-                    "session_id": session_id,
-                    "created_at": {"$gte": start_date, "$lte": end_date}
-                }
-            },
+            {"$match": match_stage},
             {
                 "$group": {
                     "_id": None,

@@ -58,8 +58,9 @@ export const MOOD_LEVELS = [
 
 export const API_ENDPOINTS = {
   chat: "/api/chat",
-  screening: "/api/screening",
-  journal: "/api/journal",
+  // Note: backend currently registers routes with duplicated segments (router prefix + path)
+  screening: "/api/screening/screening",
+  journal: "/api/journal/journal",
   counselors: "/api/counselors",
   admin: "/api/admin"
 };

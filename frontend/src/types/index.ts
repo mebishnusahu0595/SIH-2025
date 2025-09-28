@@ -45,6 +45,12 @@ export interface Counselor {
     website?: string;
   };
   isVerified: boolean;
+  rating?: number;
+  reviewCount?: number;
+  hourlyRate?: number;
+  languages?: string[];
+  location?: string;
+  is_available?: boolean;
 }
 
 export interface UserPreferences {

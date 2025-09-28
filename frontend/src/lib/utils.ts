@@ -88,3 +88,37 @@ export function exportToJson(data: any, filename: string): void {
   link.click();
   URL.revokeObjectURL(url);
 }
+
+// Helper to read current user id from localStorage-stored user_data
+export function getCurrentUserId(): string | null {
+  try {
+    const raw = localStorage.getItem("user_data");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.id || parsed?._id || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Returns a storage object compatible with zustand persist that prefixes
+// the base key with the current user id so each user's persisted state is isolated.
+export function getNamespacedStorage(baseKey: string) {
+  return {
+    getItem: (name: string) => {
+      const uid = getCurrentUserId();
+      const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
+      return localStorage.getItem(key);
+    },
+    setItem: (name: string, value: string) => {
+      const uid = getCurrentUserId();
+      const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
+      return localStorage.setItem(key, value);
+    },
+    removeItem: (name: string) => {
+      const uid = getCurrentUserId();
+      const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
+      return localStorage.removeItem(key);
+    },
+  } as Storage;
+}

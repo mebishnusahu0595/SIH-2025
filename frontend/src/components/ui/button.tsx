@@ -14,13 +14,13 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  const baseStyles = "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
+  const baseStyles = "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover-glow";
   
   const variants = {
-    default: "bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90",
-    outline: "border border-black/20 hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/5",
-    ghost: "hover:bg-black/5 dark:hover:bg-white/5",
-    destructive: "bg-red-500 text-white hover:bg-red-600"
+    default: "bg-gradient-to-r from-[#A7C7E7] to-[#89B5E3] text-white hover:from-[#89B5E3] hover:to-[#6BA3DA] hover:scale-105 hover:shadow-lg shadow-md border border-white/20",
+    outline: "border-2 border-[#A7C7E7] text-[#A7C7E7] hover:bg-[#A7C7E7] hover:text-white hover:scale-105 hover:shadow-lg transition-all duration-300",
+    ghost: "text-[#A7C7E7] hover:bg-[#A7C7E7]/10 hover:text-[#6BA3DA] hover:scale-105",
+    destructive: "bg-gradient-to-r from-red-400 to-red-500 text-white hover:from-red-500 hover:to-red-600 hover:scale-105 hover:shadow-lg"
   };
   
   const sizes = {

@@ -12,7 +12,8 @@ database = Database()
 
 async def init_db():
     """Initialize database connection and create indexes"""
-    mongodb_url = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+    # MongoDB Atlas connection string
+    mongodb_url = os.getenv("MONGODB_URL", "mongodb+srv://sih-project:mebishnusahu0595@cluster0.fzo0qav.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     database_name = os.getenv("DATABASE_NAME", "mindsupport")
                                                                                                                 
     try:
@@ -21,29 +22,42 @@ async def init_db():
         
         # Test connection
         await database.client.admin.command('ping')
-        logging.info("Successfully connected to MongoDB")
+        logging.info("Successfully connected to MongoDB Atlas")
+        logging.info(f"Connected to database: {database_name}")
         
         # Create indexes
         await create_indexes()
         
     except Exception as e:
-        logging.error(f"Failed to connect to MongoDB: {e}")
+        logging.error(f"Failed to connect to MongoDB Atlas: {e}")
+        raise
         raise
 
 async def create_indexes():
     """Create database indexes for optimal performance"""
     db = database.database
     
+    # Users collection indexes
+    await db.users.create_index([("email", ASCENDING)], unique=True)
+    await db.users.create_index([("role", ASCENDING)])
+    await db.users.create_index([("is_active", ASCENDING)])
+    await db.users.create_index([("created_at", DESCENDING)])
+    await db.users.create_index([("verification_token", ASCENDING)])
+    await db.users.create_index([("reset_token", ASCENDING)])
+    
     # Sessions collection indexes
     await db.sessions.create_index([("session_id", ASCENDING)], unique=True)
+    await db.sessions.create_index([("user_id", ASCENDING)])  # Link sessions to users
     await db.sessions.create_index([("created_at", DESCENDING)])
     
     # Chat history indexes
     await db.chat_history.create_index([("session_id", ASCENDING)])
+    await db.chat_history.create_index([("user_id", ASCENDING)])  # Link to users
     await db.chat_history.create_index([("updated_at", DESCENDING)])
     
     # Screening results indexes
     await db.screening_results.create_index([("session_id", ASCENDING)])
+    await db.screening_results.create_index([("user_id", ASCENDING)])  # Link to users
     await db.screening_results.create_index([("completed_at", DESCENDING)])
     await db.screening_results.create_index([("assessment_type", ASCENDING)])
     

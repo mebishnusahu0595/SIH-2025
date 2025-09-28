@@ -19,6 +19,7 @@ crisis_service = CrisisDetectionService()
 async def send_chat_message(
     chat_data: ChatCreate,
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     db = Depends(get_database)
 ):
     """Send a chat message and get AI response"""
@@ -42,6 +43,7 @@ async def send_chat_message(
     user_message = ChatMessage(
         id=str(uuid.uuid4()),
         session_id=session_id,
+        user_id=user_id,
         role="user",
         content=chat_data.message,
         timestamp=datetime.utcnow()
@@ -50,11 +52,16 @@ async def send_chat_message(
     try:
         # Store user message
         await db.chat_messages.insert_one(user_message.dict())
-        
+
         # Get conversation history
-        cursor = db.chat_messages.find(
-            {"session_id": session_id} if session_id else {}
-        ).sort("timestamp", 1).limit(20)  # Last 20 messages
+        # Prefer filtering by user_id when available for stronger isolation
+        query = {}
+        if user_id:
+            query["user_id"] = user_id
+        elif session_id:
+            query["session_id"] = session_id
+
+        cursor = db.chat_messages.find(query).sort("timestamp", 1).limit(20)
         
         messages = []
         async for msg_doc in cursor:
@@ -92,6 +99,7 @@ async def send_chat_message(
         ai_message = ChatMessage(
             id=str(uuid.uuid4()),
             session_id=session_id,
+            user_id=user_id,
             role="assistant",
             content=ai_response_content,
             timestamp=datetime.utcnow()
@@ -121,6 +129,7 @@ async def send_chat_message(
                     }
                 }
             
+            # Update session: prefer matching by session_id
             await db.sessions.update_one(
                 {"session_id": session_id},
                 update_data
@@ -159,22 +168,23 @@ async def send_chat_message(
 @router.get("/history", response_model=List[ChatMessage])
 async def get_chat_history(
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     limit: int = 50,
     skip: int = 0,
     db = Depends(get_database)
 ):
     """Get chat history for a session"""
     
-    if not session_id:
+    # Require either user_id or session_id to retrieve history
+    if not user_id and not session_id:
         raise HTTPException(
             status_code=400,
-            detail="Session ID required to retrieve chat history"
+            detail="Session ID or User ID required to retrieve chat history"
         )
     
     try:
-        cursor = db.chat_messages.find(
-            {"session_id": session_id}
-        ).sort("timestamp", 1).skip(skip).limit(limit)
+        query = {"user_id": user_id} if user_id else {"session_id": session_id}
+        cursor = db.chat_messages.find(query).sort("timestamp", 1).skip(skip).limit(limit)
         
         messages = []
         async for msg_doc in cursor:
@@ -193,29 +203,33 @@ async def get_chat_history(
 @router.delete("/history")
 async def clear_chat_history(
     session_id: Optional[str] = Header(None, alias="X-Session-ID"),
+    user_id: Optional[str] = Header(None, alias="X-User-ID"),
     db = Depends(get_database)
 ):
-    """Clear chat history for a session"""
+    """Clear chat history for a session or user"""
     
-    if not session_id:
+    if not user_id and not session_id:
         raise HTTPException(
             status_code=400,
-            detail="Session ID required to clear chat history"
+            detail="Session ID or User ID required to clear chat history"
         )
     
     try:
-        result = await db.chat_messages.delete_many({"session_id": session_id})
+        query = {"user_id": user_id} if user_id else {"session_id": session_id}
+        result = await db.chat_messages.delete_many(query)
         
         # Update session message count
-        await db.sessions.update_one(
-            {"session_id": session_id},
-            {
-                "$set": {
-                    "message_count": 0,
-                    "updated_at": datetime.utcnow()
-                }
-            }
-        )
+        # Update sessions linked to this user or session
+        if user_id:
+            await db.sessions.update_many(
+                {"user_id": user_id},
+                {"$set": {"message_count": 0, "updated_at": datetime.utcnow()}}
+            )
+        else:
+            await db.sessions.update_one(
+                {"session_id": session_id},
+                {"$set": {"message_count": 0, "updated_at": datetime.utcnow()}}
+            )
         
         return {"message": f"Deleted {result.deleted_count} messages"}
     

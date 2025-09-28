@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 
-from routes import chat, sessions, screening, journal, counselors, admin
+from routes import chat, sessions, screening, journal, counselors, admin, auth
 from database import init_db
 from middleware.rate_limit import RateLimitMiddleware
 from middleware.logging import LoggingMiddleware
@@ -40,7 +40,7 @@ app = FastAPI(
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://mindsupport.vercel.app"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "https://mindsupport.vercel.app"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
     allow_headers=["*"],
@@ -51,6 +51,7 @@ app.add_middleware(RateLimitMiddleware)
 app.add_middleware(LoggingMiddleware)
 
 # Include routers
+app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
 app.include_router(sessions.router, prefix="/api/session", tags=["Sessions"])
 app.include_router(screening.router, prefix="/api/screening", tags=["Screening"])

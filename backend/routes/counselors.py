@@ -6,7 +6,7 @@ import uuid
 from database import get_database
 from models.schemas import Counselor, CounselorCreate
 
-router = APIRouter(prefix="/counselors", tags=["counselors"])
+router = APIRouter(tags=["counselors"])
 
 @router.get("", response_model=List[Counselor])
 async def get_counselors(
@@ -17,36 +17,76 @@ async def get_counselors(
     skip: int = 0,
     db = Depends(get_database)
 ):
-    """Get list of verified counselors"""
+    """Get list of verified doctors as counselors"""
     
     try:
-        # Build query
-        query = {"is_verified": True}  # Only show verified counselors
+        # Build query for doctors
+        query = {"role": "doctor", "is_active": True}
         
         if specialty:
-            query["specialties"] = {"$in": [specialty]}
+            # Handle both singular "specialization" and plural "specializations" fields
+            query["$or"] = [
+                {"doctor_profile.specializations": {"$in": [specialty]}},
+                {"doctor_profile.specialization": {"$regex": specialty, "$options": "i"}}
+            ]
         
-        if location:
-            query["location"] = {"$regex": location, "$options": "i"}  # Case-insensitive search
-        
-        if is_available is not None:
-            query["is_available"] = is_available
-        
-        # Get counselors
-        cursor = db.counselors.find(query).skip(skip).limit(limit)
+        # Get doctors from counselors collection
+        cursor = db.counselors.find(query, {"password": 0}).skip(skip).limit(limit)
         
         counselors = []
-        async for counselor_doc in cursor:
-            counselor_doc.pop("_id", None)  # Remove MongoDB _id
-            # Remove sensitive information
-            counselor_doc.pop("email", None)
-            counselor_doc.pop("phone", None)
-            counselors.append(Counselor(**counselor_doc))
+        async for doctor_doc in cursor:
+            # Transform doctor data to counselor format
+            # Handle both singular "specialization" and plural "specializations" fields
+            specialization_str = doctor_doc.get("doctor_profile", {}).get("specialization", "")
+            specializations = doctor_doc.get("doctor_profile", {}).get("specializations", [])
+            
+            print(f"DEBUG: doctor_doc: {doctor_doc.get('full_name')}")
+            print(f"DEBUG: specialization_str: '{specialization_str}'")
+            print(f"DEBUG: specializations: {specializations}")
+            
+            # If specializations array is empty but specialization string exists, split it
+            if not specializations and specialization_str:
+                specializations = [s.strip() for s in specialization_str.split(",") if s.strip()]
+                print(f"DEBUG: split specializations: {specializations}")
+            
+            qualifications = doctor_doc.get("doctor_profile", {}).get("qualifications", [])
+            bio = doctor_doc.get("doctor_profile", {}).get("bio", "Experienced mental health professional")
+            
+            print(f"DEBUG: final specializations: {specializations}")
+            print(f"DEBUG: bio: {bio[:50]}...")
+            
+            # Create credentials string from qualifications
+            credentials = ", ".join(qualifications) if qualifications else "Licensed Professional"
+            
+            # Create credentials string from qualifications
+            credentials = ", ".join(qualifications) if qualifications else "Licensed Professional"
+            
+            counselor_data = {
+                "id": str(doctor_doc["_id"]),
+                "name": doctor_doc.get("full_name", ""),
+                "specialties": specializations,
+                "credentials": credentials,
+                "bio": doctor_doc.get("doctor_profile", {}).get("bio", "Experienced mental health professional"),
+                "availability": "Mon-Fri 9AM-5PM",  # Default availability
+                "contactInfo": {
+                    "email": doctor_doc.get("email", ""),
+                    "phone": doctor_doc.get("doctor_profile", {}).get("phone", ""),
+                    "website": ""
+                },
+                "isVerified": True,
+                "rating": 4.5,  # Default rating
+                "reviewCount": 0,
+                "hourlyRate": doctor_doc.get("doctor_profile", {}).get("consultation_fee", 0),
+                "languages": ["English"],  # Default
+                "location": "Online",  # Default
+                "is_available": True
+            }
+            counselors.append(Counselor(**counselor_data))
         
         return counselors
     
     except Exception as e:
-        print(f"Database error retrieving counselors: {e}")
+        print(f"Database error retrieving doctors: {e}")
         raise HTTPException(
             status_code=500,
             detail="Error retrieving counselors"
@@ -57,16 +97,25 @@ async def get_specialties(db = Depends(get_database)):
     """Get list of available specialties"""
     
     try:
-        # Aggregate all unique specialties
-        pipeline = [
-            {"$match": {"is_verified": True}},
-            {"$unwind": "$specialties"},
-            {"$group": {"_id": "$specialties"}},
-            {"$sort": {"_id": 1}}
-        ]
+        # Get all counselors and extract unique specialties
+        cursor = db.counselors.find({"role": "doctor", "is_active": True}, {"doctor_profile": 1})
         
-        result = await db.counselors.aggregate(pipeline).to_list(None)
-        specialties = [item["_id"] for item in result]
+        specialties_set = set()
+        async for doctor_doc in cursor:
+            # Handle both singular "specialization" and plural "specializations" fields
+            specialization_str = doctor_doc.get("doctor_profile", {}).get("specialization", "")
+            specializations = doctor_doc.get("doctor_profile", {}).get("specializations", [])
+            
+            # If specializations array is empty but specialization string exists, split it
+            if not specializations and specialization_str:
+                specializations = [s.strip() for s in specialization_str.split(",") if s.strip()]
+            
+            if specializations:
+                for spec in specializations:
+                    specialties_set.add(spec.strip())
+        
+        specialties = sorted(list(specialties_set))
+        return specialties
         
         return {"specialties": specialties}
     

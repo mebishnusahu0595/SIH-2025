@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Message, ChatState } from "@/types";
 import { STORAGE_KEYS, CRISIS_KEYWORDS } from "@/lib/constants";
-import { generateSessionId } from "@/lib/utils";
+import { generateSessionId, getNamespacedStorage } from "@/lib/utils";
 
 interface ChatStore extends ChatState {
   addMessage: (content: string, sender: "user" | "bot", type?: "text" | "crisis_alert") => void;
@@ -65,6 +65,8 @@ export const useChatStore = create<ChatStore>()(
     }),
     {
       name: STORAGE_KEYS.chatHistory,
+      // persist per-user so chats are isolated between users
+      storage: getNamespacedStorage(STORAGE_KEYS.chatHistory) as any,
       partialize: (state) => ({
         messages: state.messages,
         sessionId: state.sessionId,

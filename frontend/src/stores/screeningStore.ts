@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ScreeningResult } from "@/types";
 import { STORAGE_KEYS, PHQ9_QUESTIONS, GAD7_QUESTIONS } from "@/lib/constants";
+import { getNamespacedStorage } from "@/lib/utils";
 
 interface ScreeningStore {
   results: ScreeningResult[];
@@ -36,6 +37,37 @@ export const useScreeningStore = create<ScreeningStore>()(
         set((state) => ({
           results: [result, ...state.results],
         }));
+
+        // Fire-and-forget: persist screening result to backend with session/user headers
+        (async () => {
+          try {
+            const { getCurrentUserId } = await import('@/lib/utils');
+            const uid = getCurrentUserId();
+            // try to read session id from chat store if available
+            const chatStore = (await import('@/stores/chatStore')).useChatStore.getState?.();
+            const sessionId = chatStore?.sessionId;
+
+            const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const { API_ENDPOINTS } = await import('@/lib/constants');
+            const endpointBase = `${apiBase}${API_ENDPOINTS.screening}`; // already includes duplicated segment
+            const endpoint = result.type === 'PHQ9' ? `${endpointBase}/phq9` : `${endpointBase}/gad7`;
+
+            // Backend expects responses as objects with question_id and score
+            const formattedResponses = result.responses.map((s: number, idx: number) => ({ question_id: idx + 1, score: s }));
+
+            await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Session-ID': sessionId || '',
+                'X-User-ID': uid || '',
+              },
+              body: JSON.stringify({ responses: formattedResponses }),
+            });
+          } catch (e) {
+            // ignore network errors (local state retained)
+          }
+        })();
       },
 
       getLatestResult: (type: "PHQ9" | "GAD7") => {
@@ -103,6 +135,8 @@ export const useScreeningStore = create<ScreeningStore>()(
     }),
     {
       name: STORAGE_KEYS.screeningResults,
+      // use namespaced storage so each user's screening results are isolated
+      storage: getNamespacedStorage(STORAGE_KEYS.screeningResults) as any,
     }
   )
 );
