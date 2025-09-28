@@ -90,16 +90,6 @@ cd SIH-2025
 
 ---
 
-## Contributing
-
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature/your-feature`)
-3. Make your changes
-4. Commit and push (`git commit -m "feat: ..." && git push origin ...`)
-5. Open a pull request
-
----
-
 ## License
 This project is licensed under the MIT License.
 
@@ -120,7 +110,7 @@ This project is licensed under the MIT License.
 ---
 
 ## Demo & Screenshots
-> Add screenshots and demo links here as needed
+
 ## Demo & Screenshots
 
 ### Home Page
@@ -132,7 +122,6 @@ This project is licensed under the MIT License.
 ### Resources Page
 ![Resources Page](docs/image2.png)
 
-> To update these images, replace the files in `docs/screenshots/` or use your own paths. You can use PNG, JPG, or GIF formats.
 
 ---
 
