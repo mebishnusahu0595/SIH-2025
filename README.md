@@ -127,10 +127,10 @@ This project is licensed under the MIT License.
 ![Home Page](docs/image.png)
 
 ### Screening Page
-![Screening Page](docs/image2.png)
+![Screening Page](docs/image1.png)
 
 ### Resources Page
-![Resources Page](docs/image3.png)
+![Resources Page](docs/image2.png)
 
 > To update these images, replace the files in `docs/screenshots/` or use your own paths. You can use PNG, JPG, or GIF formats.
 
