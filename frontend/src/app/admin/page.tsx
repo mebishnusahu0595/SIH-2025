@@ -98,34 +98,6 @@ export default function AdminPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Check admin access and redirect if necessary
-  useEffect(() => {
-    if (authLoading) return;
-    
-    if (!user) {
-      if (!redirecting) {
-        setRedirecting(true);
-        router.push('/admin-login');
-      }
-      return;
-    }
-    
-    if (user.role !== 'admin') {
-      if (!redirecting) {
-        setRedirecting(true);
-        router.push('/admin-login');
-      }
-      return;
-    }
-    
-    // If user is admin, fetch data
-    fetchAdminStats();
-    fetchDoctorApplications();
-    fetchSystemUsers();
-    fetchDoctors();
-    setLoading(false);
-  }, [user, router, authLoading, redirecting]);
-
   const fetchAdminStats = useCallback(async () => {
     try {
       const response = await fetch('https://main-yduh.onrender.com/api/admin/stats', {
@@ -211,6 +183,34 @@ export default function AdminPage() {
       setError('Network error while fetching doctors');
     }
   }, [user?.id]);
+
+  // Check admin access and redirect if necessary
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (!user) {
+      if (!redirecting) {
+        setRedirecting(true);
+        router.push('/admin-login');
+      }
+      return;
+    }
+    
+    if (user.role !== 'admin') {
+      if (!redirecting) {
+        setRedirecting(true);
+        router.push('/admin-login');
+      }
+      return;
+    }
+    
+    // If user is admin, fetch data
+    fetchAdminStats();
+    fetchDoctorApplications();
+    fetchSystemUsers();
+    fetchDoctors();
+    setLoading(false);
+  }, [user, router, authLoading, redirecting, fetchAdminStats, fetchDoctorApplications, fetchSystemUsers, fetchDoctors]);
 
   const handleDoctorApproval = async (doctorId: string, action: 'approve' | 'reject') => {
     try {

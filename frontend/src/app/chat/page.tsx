@@ -82,7 +82,7 @@ export default function ChatPage() {
       
     } catch (error) {
       console.error('API Error:', error);
-      addMessage("I'm having trouble connecting right now. Please try again.", "bot");
+      addMessage("I&apos;m having trouble connecting right now. Please try again.", "bot");
     } finally {
       setTyping(false);
     }
@@ -92,7 +92,7 @@ export default function ChatPage() {
     if (!isVoiceEnabled) return;
     
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = ((window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition || (window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition) as any;
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       const recognition = new SpeechRecognition();
       
       recognition.continuous = false;
@@ -102,8 +102,8 @@ export default function ChatPage() {
       recognition.onstart = () => setIsListening(true);
       recognition.onend = () => setIsListening(false);
       
-      recognition.onresult = (event: unknown) => {
-        const transcript = (event as any).results[0][0].transcript;
+      recognition.onresult = (event: Event & { results: SpeechRecognitionResultList }) => {
+        const transcript = event.results[0][0].transcript;
         setInput(transcript);
       };
       

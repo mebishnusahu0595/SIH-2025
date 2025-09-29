@@ -108,17 +108,17 @@ export function getCurrentUserId(): string | null {
 // the base key with the current user id so each user's persisted state is isolated.
 export function getNamespacedStorage(baseKey: string) {
   return {
-    getItem: (_name: string) => {
+    getItem: (name: string) => {
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.getItem(key);
     },
-    setItem: (_name: string, value: string) => {
+    setItem: (name: string, value: string) => {
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.setItem(key, value);
     },
-    removeItem: (_name: string) => {
+    removeItem: (name: string) => {
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.removeItem(key);
