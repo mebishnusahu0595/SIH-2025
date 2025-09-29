@@ -11,9 +11,19 @@ import { formatTime } from "@/lib/utils";
 // Extend window interface for speech recognition
 declare global {
   interface Window {
-    webkitSpeechRecognition?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    SpeechRecognition?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    webkitSpeechRecognition?: new () => SpeechRecognition;
+    SpeechRecognition?: new () => SpeechRecognition;
   }
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onresult: ((event: Event & { results: SpeechRecognitionResultList }) => void) | null;
+  start(): void;
 }
 
 export default function ChatPage() {
@@ -101,7 +111,7 @@ export default function ChatPage() {
     
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       // Type assertion for browser speech recognition APIs
-      const SpeechRecognitionConstructor = window.webkitSpeechRecognition || window.SpeechRecognition;
+      const SpeechRecognitionConstructor = (window.webkitSpeechRecognition || window.SpeechRecognition) as new () => SpeechRecognition;
       const recognition = new SpeechRecognitionConstructor();
       
       recognition.continuous = false;
