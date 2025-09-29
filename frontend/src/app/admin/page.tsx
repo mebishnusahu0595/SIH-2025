@@ -21,6 +21,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDate } from "@/lib/utils";
+import { API_ENDPOINTS } from "@/lib/constants";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://main-yduh.onrender.com';
 
 interface AdminStats {
   totalUsers: number;
@@ -100,7 +103,7 @@ export default function AdminPage() {
 
   const fetchAdminStats = useCallback(async () => {
     try {
-      const response = await fetch('https://main-yduh.onrender.com/api/admin/stats', {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.admin}/stats`, {
         headers: {
           'Content-Type': 'application/json',
           'X-User-ID': user?.id || ''
@@ -121,7 +124,7 @@ export default function AdminPage() {
 
   const fetchDoctorApplications = useCallback(async () => {
     try {
-      const response = await fetch('https://main-yduh.onrender.com/api/admin/doctor-applications', {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.admin}/doctor-applications`, {
         headers: {
           'Content-Type': 'application/json',
           'X-User-ID': user?.id || ''
@@ -144,7 +147,7 @@ export default function AdminPage() {
 
   const fetchSystemUsers = useCallback(async () => {
     try {
-      const response = await fetch('https://main-yduh.onrender.com/api/admin/users', {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.admin}/users`, {
         headers: {
           'Content-Type': 'application/json',
           'X-User-ID': user?.id || ''
@@ -165,7 +168,7 @@ export default function AdminPage() {
 
   const fetchDoctors = useCallback(async () => {
     try {
-      const response = await fetch('https://main-yduh.onrender.com/api/admin/doctors', {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.admin}/doctors`, {
         headers: {
           'Content-Type': 'application/json',
           'X-User-ID': user?.id || ''
@@ -214,7 +217,7 @@ export default function AdminPage() {
 
   const handleDoctorApproval = async (doctorId: string, action: 'approve' | 'reject') => {
     try {
-      const response = await fetch(`https://main-yduh.onrender.com/api/admin/doctor-applications/${doctorId}/${action}`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.admin}/doctor-applications/${doctorId}/${action}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -240,7 +243,7 @@ export default function AdminPage() {
     if (!confirm('Are you sure you want to delete this doctor application?')) return;
     
     try {
-      const response = await fetch(`https://main-yduh.onrender.com/api/admin/doctor-applications/${applicationId}`, {
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.admin}/doctor-applications/${applicationId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
