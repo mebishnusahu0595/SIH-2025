@@ -108,21 +108,29 @@ export function getCurrentUserId(): string | null {
 // Returns a storage object compatible with zustand persist that prefixes
 // the base key with the current user id so each user's persisted state is isolated.
 export function getNamespacedStorage(baseKey: string) {
+  if (typeof window === "undefined") {
+    // During SSR, return a no-op storage to prevent localStorage access
+    return {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+      length: 0,
+      clear: () => {},
+      key: () => null,
+    } as Storage;
+  }
   return {
     getItem: (_name: string) => {
-      if (typeof window === "undefined") return null;
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.getItem(key);
     },
     setItem: (_name: string, value: string) => {
-      if (typeof window === "undefined") return;
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.setItem(key, value);
     },
     removeItem: (_name: string) => {
-      if (typeof window === "undefined") return;
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.removeItem(key);
