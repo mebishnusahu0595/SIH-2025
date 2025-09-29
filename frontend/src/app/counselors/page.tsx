@@ -20,7 +20,10 @@ export default function CounselorsPage() {
   const fetchCounselors = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://main-yduh.onrender.com/api/counselors');
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://main-yduh.onrender.com';
+      const counselorsEndpoint = `${apiBase}/api/counselors`;
+      
+      const response = await fetch(counselorsEndpoint);
       
       if (response.ok) {
         const data = await response.json();
