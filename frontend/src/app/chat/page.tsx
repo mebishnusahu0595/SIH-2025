@@ -172,8 +172,8 @@ export default function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto mb-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-center text-white mt-8">
-            <p>Hello! I&apos;m here to listen and support you.</p>
+          <div className="text-center text-gray-700 mt-8">
+            <p className="mb-2">Hello! I&apos;m here to listen and support you.</p>
             <p>How are you feeling today?</p>
           </div>
         )}
@@ -184,16 +184,16 @@ export default function ChatPage() {
             className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg p-3 ${
+              className={`max-w-[80%] rounded-md p-3 border shadow-sm ${
                 message.sender === "user"
-                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  ? "bg-[#A7C7E7] text-black border-transparent"
                   : message.type === "crisis_alert"
                   ? "bg-red-100 border border-red-300 text-red-800"
-                  : "bg-gray-100 dark:bg-gray-800"
+                  : "bg-[#E6F2FB] text-black border-transparent"
               }`}
             >
               <p className="whitespace-pre-wrap">{message.content}</p>
-              <p className="text-xs opacity-70 mt-1">
+              <p className="text-xs text-gray-600 mt-1">
                 {formatTime(message.timestamp)}
               </p>
             </div>
@@ -202,17 +202,12 @@ export default function ChatPage() {
         
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
-                </div>
-                <span className="text-sm text-gray-500 ml-2">Typing...</span>
+            <div className="bg-[#E6F2FB] rounded-md p-3 border shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-[#2f6fb3] rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-[#2f6fb3] rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
+                <div className="w-2 h-2 bg-[#2f6fb3] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                <span className="text-sm text-gray-600 ml-2">Typing...</span>
               </div>
             </div>
           </div>
