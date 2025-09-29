@@ -93,6 +93,7 @@ export function exportToJson(data: unknown, filename: string): void {
 
 // Helper to read current user id from localStorage-stored user_data
 export function getCurrentUserId(): string | null {
+  if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem("user_data");
     if (!raw) return null;
@@ -108,17 +109,20 @@ export function getCurrentUserId(): string | null {
 // the base key with the current user id so each user's persisted state is isolated.
 export function getNamespacedStorage(baseKey: string) {
   return {
-    getItem: (_name: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+    getItem: (_name: string) => {
+      if (typeof window === "undefined") return null;
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.getItem(key);
     },
-    setItem: (_name: string, value: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+    setItem: (_name: string, value: string) => {
+      if (typeof window === "undefined") return;
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.setItem(key, value);
     },
-    removeItem: (_name: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+    removeItem: (_name: string) => {
+      if (typeof window === "undefined") return;
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.removeItem(key);
