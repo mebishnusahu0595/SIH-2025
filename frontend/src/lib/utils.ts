@@ -108,17 +108,17 @@ export function getCurrentUserId(): string | null {
 // the base key with the current user id so each user's persisted state is isolated.
 export function getNamespacedStorage(baseKey: string) {
   return {
-    getItem: (name: string) => {
+    getItem: (_name: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.getItem(key);
     },
-    setItem: (name: string, value: string) => {
+    setItem: (_name: string, value: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.setItem(key, value);
     },
-    removeItem: (name: string) => {
+    removeItem: (_name: string) => { // eslint-disable-line @typescript-eslint/no-unused-vars
       const uid = getCurrentUserId();
       const key = uid ? `${baseKey}_user_${uid}` : `${baseKey}_anon`;
       return localStorage.removeItem(key);

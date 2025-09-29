@@ -2,13 +2,13 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getNamespacedStorage } from '@/lib/utils';
+import { generateSessionId, getNamespacedStorage } from '@/lib/utils';
+import { Message } from "@/types";
 import { STORAGE_KEYS } from '@/lib/constants';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useChatStore } from '@/stores/chatStore';
 import { useJournalStore } from '@/stores/journalStore';
 import { useScreeningStore } from '@/stores/screeningStore';
-import { generateSessionId } from '@/lib/utils';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://main-yduh.onrender.com';
 
@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       (async () => {
         try {
           await hydrateUserStores();
-        } catch (_e) {
+        } catch (_e) { // eslint-disable-line @typescript-eslint/no-unused-vars
           // ignore
         }
       })();
@@ -215,6 +215,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Hydration helper used both on mount and after login
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const hydrateUserStores = async () => {
     try {
       // Chat
@@ -223,12 +224,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (rawChat) {
         try {
           const parsed = JSON.parse(rawChat);
-          const chatState: any = {};
+          const chatState: { messages?: Message[]; sessionId?: string } = {};
           if (Array.isArray(parsed.messages)) chatState.messages = parsed.messages;
           if (parsed.sessionId) chatState.sessionId = parsed.sessionId;
           // apply to store
           try { useChatStore.setState(chatState); } catch (_e) { /* ignore */ }
-        } catch (e) {
+        } catch (_e) {
           // ignore parse errors
         }
       } else {
@@ -248,7 +249,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else if (parsed.results && Array.isArray(parsed.results)) {
             try { useScreeningStore.setState({ results: parsed.results }); } catch (_e) { /* ignore */ }
           }
-        } catch (e) {
+        } catch (_e) {
           // ignore
         }
       }
@@ -264,7 +265,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else if (parsed.entries && Array.isArray(parsed.entries)) {
             try { useJournalStore.setState({ entries: parsed.entries }); } catch (_e) { /* ignore */ }
           }
-        } catch (e) {
+        } catch (_e) {
           // ignore
         }
       }
@@ -351,6 +352,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('[hydrateUserStores] General error in server fetch:', _e);
     }
   };
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   const value: AuthContextType = {
     user,

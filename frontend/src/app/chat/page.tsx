@@ -8,6 +8,14 @@ import { CrisisAlert } from "@/components/CrisisAlert";
 import { useChatStore } from "@/stores/chatStore";
 import { formatTime } from "@/lib/utils";
 
+// Extend window interface for speech recognition
+declare global {
+  interface Window {
+    webkitSpeechRecognition?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    SpeechRecognition?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  }
+}
+
 export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
@@ -92,8 +100,9 @@ export default function ChatPage() {
     if (!isVoiceEnabled) return;
     
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-      const recognition = new SpeechRecognition();
+      // Type assertion for browser speech recognition APIs
+      const SpeechRecognitionConstructor = window.webkitSpeechRecognition || window.SpeechRecognition;
+      const recognition = new SpeechRecognitionConstructor();
       
       recognition.continuous = false;
       recognition.interimResults = false;
@@ -126,7 +135,7 @@ export default function ChatPage() {
             <p className="leading-relaxed">
               I&apos;m here to provide supportive conversation and evidence-based coping tips. 
               This service is not a substitute for professional medical care. 
-              If you're in crisis, please reach out to emergency services or call 988.
+              If you&apos;re in crisis, please reach out to emergency services or call 988.
             </p>
           </div>
         </div>

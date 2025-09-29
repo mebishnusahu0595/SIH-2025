@@ -36,7 +36,8 @@ export default function RegisterPage() {
       });
       if (role === "doctor") {
         setError(""); // clear error
-        alert(result.message); // show success message
+        const message = 'message' in result ? result.message : 'Registration successful';
+        alert(message); // show success message
         router.push("/login");
       } else {
         router.push("/dashboard");
