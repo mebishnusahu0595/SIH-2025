@@ -66,14 +66,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Fallback: attempt hydration again in next tick to avoid races
       try {
         setTimeout(async () => {
-          try { await hydrateUserStores(); } catch (_e) { /* ignore */ }
+          try { await hydrateUserStores(); } catch { /* ignore */ }
         }, 0);
-      } catch (_e) { /* ignore */ }
+      } catch { /* ignore */ }
 
       // Debug: print user_data and namespaced storage keys to help diagnose
       try {
         const parsed = (() => {
-          try { return JSON.parse(savedUser); } catch (_e) { return null; }
+          try { return JSON.parse(savedUser); } catch { return null; }
         })();
         const uid = parsed?.id || parsed?._id || null;
         console.debug('[AuthProvider] savedUser present', !!savedUser, 'uid=', uid);
@@ -83,11 +83,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const key = uid ? `${base}_user_${uid}` : `${base}_anon`;
             const v = localStorage.getItem(key);
             console.debug('[AuthProvider] storage key=', key, 'hasValue=', !!v, 'preview=', v ? v.substring(0, 120) : null);
-          } catch (_e) {
+          } catch {
             /* ignore */
           }
         });
-      } catch (_e) {
+      } catch {
         // ignore debug errors
       }
     }
@@ -118,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         // After setting user_data, hydrate per-user persisted zustand stores
         await hydrateUserStores();
-      } catch (_e) {
+      } catch {
         // ignore storage errors
       }
     } catch (error) {
@@ -154,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('user_data', JSON.stringify(result));
         try {
           await hydrateUserStores();
-        } catch (_e) {
+        } catch {
           // ignore storage errors
         }
         setLoading(false);
@@ -192,7 +192,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // remove only the main user_data so app knows nobody is logged in
     try {
       localStorage.removeItem('user_data');
-    } catch (_e) {
+    } catch {
       // ignore storage errors
     }
 
@@ -209,7 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // screening
       const screeningStore = useScreeningStore.getState();
       if (screeningStore) useScreeningStore.setState({ results: [] });
-    } catch (_e) {
+    } catch {
       // ignore
     }
   };
