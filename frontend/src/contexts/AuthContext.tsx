@@ -51,9 +51,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load user from localStorage on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem('user_data');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    if (typeof window !== "undefined") {
+      const savedUser = localStorage.getItem('user_data');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
       // Hydrate per-user persisted zustand stores on initial load
       (async () => {
         try {
@@ -92,6 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     setLoading(false);
+  }
   }, []);
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
@@ -114,7 +116,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       const userData = await response.json();
       setUser(userData);
-      localStorage.setItem('user_data', JSON.stringify(userData));
+      if (typeof window !== "undefined") {
+        localStorage.setItem('user_data', JSON.stringify(userData));
+      }
       try {
         // After setting user_data, hydrate per-user persisted zustand stores
         await hydrateUserStores();
@@ -151,7 +155,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         // Patient registration, log in
         setUser(result);
-        localStorage.setItem('user_data', JSON.stringify(result));
+        if (typeof window !== "undefined") {
+          localStorage.setItem('user_data', JSON.stringify(result));
+        }
         try {
           await hydrateUserStores();
         } catch {
@@ -181,7 +187,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       const updatedUser = await response.json();
       setUser(updatedUser);
-      localStorage.setItem('user_data', JSON.stringify(updatedUser));
+      if (typeof window !== "undefined") {
+        localStorage.setItem('user_data', JSON.stringify(updatedUser));
+      }
     } catch (error) {
       throw error;
     }
@@ -190,10 +198,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     // remove only the main user_data so app knows nobody is logged in
-    try {
-      localStorage.removeItem('user_data');
-    } catch {
-      // ignore storage errors
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem('user_data');
+      } catch {
+        // ignore storage errors
+      }
     }
 
     // Clear in-memory zustand stores so UI updates immediately
@@ -274,10 +284,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // After local hydration, attempt to fetch server-side persisted data for the logged-in user
-    try {
-      const raw = localStorage.getItem('user_data');
-      const parsed = raw ? JSON.parse(raw) : null;
-      const uid = parsed?.id || parsed?._id || null;
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem('user_data');
+        const parsed = raw ? JSON.parse(raw) : null;
+        const uid = parsed?.id || parsed?._id || null;
       if (uid) {
         console.log('[hydrateUserStores] Fetching server data for user:', uid);
         // Fetch journal entries from server (best-effort)
@@ -348,8 +359,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         console.log('[hydrateUserStores] No user ID found, skipping server fetch');
       }
-    } catch (_e) {
-      console.log('[hydrateUserStores] General error in server fetch:', _e);
+      } catch (_e) {
+        console.log('[hydrateUserStores] General error in server fetch:', _e);
+      }
     }
   };
   /* eslint-enable @typescript-eslint/no-unused-vars */
@@ -397,4 +409,3 @@ export const ProtectedRoute: React.FC<{
   }
   return <>{children}</>;
 };
-
